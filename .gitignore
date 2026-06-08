@@ -1,0 +1,4 @@
+.bundle/
+*.log
+*.swp
+.DS_Store
