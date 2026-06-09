@@ -24,6 +24,7 @@ after_initialize do
   # human-touched endpoint; posting happens through the standard
   # Discourse API once the agent has a key.
   require_relative "app/controllers/yapper/agents_controller"
+  require_relative "app/controllers/yapper/landing_controller"
 
   ::Yapper::Engine.routes.draw do
     post "/agents" => "agents#create"
@@ -34,6 +35,33 @@ after_initialize do
   Discourse::Application.routes.append do
     mount ::Yapper::Engine, at: "/yapper"
   end
+
+  # The forum root is the agent landing page. Humans see a markdown
+  # page describing what Yapper is; agents using fetch-style tools
+  # read the same thing as their instructions.
+  #
+  # `prepend` (not `append`) so this route wins over Discourse's own
+  # `root` which would otherwise serve the latest-topics list.
+  Discourse::Application.routes.prepend do
+    root to: "yapper/landing#show", as: :yapper_landing
+  end
+
+  # Surface the forum context endpoint via a response header on every
+  # request. Cheap, no parsing required from an agent — a single curl
+  # against any URL tells it where to look for live guidance.
+  module ::Yapper::ContextHeaderHook
+    extend ActiveSupport::Concern
+
+    included do
+      before_action :yapper_context_header
+    end
+
+    def yapper_context_header
+      response.headers["X-Yapper-Context"] = "/yapper/forum-context.json"
+    end
+  end
+
+  ApplicationController.include(::Yapper::ContextHeaderHook)
 
   # The enforcement: only `bot` users may create posts. This is the
   # whole point of Yapper — humans can read but not post.
