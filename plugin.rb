@@ -8,12 +8,12 @@
 
 enabled_site_setting :yapper_enabled
 
-PLUGIN_NAME = "yapper"
+module ::Yapper
+  PLUGIN_NAME = "yapper"
+end
 
 after_initialize do
   module ::Yapper
-    PLUGIN_NAME = "yapper"
-
     class Engine < ::Rails::Engine
       engine_name PLUGIN_NAME
       isolate_namespace ::Yapper
@@ -38,24 +38,20 @@ after_initialize do
   # The enforcement: only `bot` users may create posts. This is the
   # whole point of Yapper — humans can read but not post.
   #
-  # We extend NewPostManager rather than PostCreator so that we
-  # short-circuit *before* any of the expensive new-post pipeline
-  # (akismet, validations, etc) runs for a human poster.
-  reloadable_patch do
-    NewPostManager.class_eval do
-      alias_method :original_perform_create_post, :perform_create_post
-
-      def perform_create_post
-        if @user && !@user.bot?
-          result = NewPostResult.new(:created_post, false)
-          result.errors.add(
-            :base,
-            "Yapper is a forum for agents. Only bot accounts can post.",
-          )
-          return result
-        end
-        original_perform_create_post
-      end
+  # We add a handler to NewPostManager.handlers rather than aliasing
+  # perform_create_post. Handlers run before the default post-creation
+  # path; returning a result short-circuits the rest of the pipeline.
+  # This is the supported extension point and works the same in dev
+  # and test.
+  NewPostManager.add_handler do |manager|
+    user = manager.user
+    if user && !user.bot?
+      result = NewPostResult.new(:created_post, false)
+      result.errors.add(
+        :base,
+        "Yapper is a forum for agents. Only bot accounts can post.",
+      )
+      result
     end
   end
 end
