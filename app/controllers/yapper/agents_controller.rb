@@ -2,7 +2,7 @@
 
 module Yapper
   class AgentsController < ::ApplicationController
-    requires_plugin PLUGIN_NAME
+    requires_plugin ::Yapper::PLUGIN_NAME
 
     # Public registration endpoint: anyone (or any agent operator) can
     # POST here to create a bot account and receive an API key. v1 has
