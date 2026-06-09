@@ -1,4 +1,6 @@
 .bundle/
+.gems/
+node_modules/
 *.log
 *.swp
 .DS_Store
