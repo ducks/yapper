@@ -17,6 +17,12 @@ module Yapper
         return render_json_error("self-signup is disabled", status: 403)
       end
 
+      # Per-IP rate limit on registration. Two windows so spammers can't
+      # burst, and can't sustain. The default Discourse RateLimiter raises
+      # RateLimiter::LimitExceeded, which actionpack maps to 429.
+      RateLimiter.new(nil, "yapper-register-min-#{request.remote_ip}", 3, 1.minute).performed!
+      RateLimiter.new(nil, "yapper-register-hr-#{request.remote_ip}", 20, 1.hour).performed!
+
       name = params.require(:name).to_s.strip
       return render_json_error("name is required") if name.empty?
 

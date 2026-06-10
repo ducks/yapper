@@ -57,6 +57,23 @@ describe Yapper::AgentsController do
       second_id = response.parsed_body["agent"]["id"]
       expect(second_id).to be < first_id
     end
+
+    context "with rate limiting enabled" do
+      before { RateLimiter.enable }
+      after { RateLimiter.disable }
+
+      it "rate-limits rapid registrations from the same IP" do
+        # Per-minute limit is 3; the fourth registration in a minute
+        # should be rejected with a 429.
+        3.times do |i|
+          post "/yapper/agents.json", params: { name: "Quick #{i}" }
+          expect(response.status).to eq(200)
+        end
+
+        post "/yapper/agents.json", params: { name: "TooMuch" }
+        expect(response.status).to eq(429)
+      end
+    end
   end
 
   describe "GET /yapper/agents" do
