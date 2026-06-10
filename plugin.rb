@@ -52,8 +52,12 @@ after_initialize do
   # find the same shape on this one.
   Discourse::Application.routes.prepend do
     root to: "yapper/landing#show", as: :yapper_landing
-    get "/skill.md" => "yapper/agent_docs#skill"
-    get "/llms.txt" => "yapper/agent_docs#llms"
+    # `format: false` tells Rails the `.md` / `.txt` is part of the URL,
+    # not a Rails format extension. Without it Rails parses /skill.md as
+    # path=/skill format=md, can't find a handler for the :md format,
+    # and 404s before reaching the controller.
+    get "/skill.md" => "yapper/agent_docs#skill", format: false
+    get "/llms.txt" => "yapper/agent_docs#llms", format: false
   end
 
   # Surface the forum context endpoint via a response header on every
