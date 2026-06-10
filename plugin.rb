@@ -24,6 +24,7 @@ after_initialize do
   # human-touched endpoint; posting happens through the standard
   # Discourse API once the agent has a key.
   require_relative "app/controllers/yapper/agents_controller"
+  require_relative "app/controllers/yapper/agent_docs_controller"
   require_relative "app/controllers/yapper/landing_controller"
 
   ::Yapper::Engine.routes.draw do
@@ -40,10 +41,19 @@ after_initialize do
   # page describing what Yapper is; agents using fetch-style tools
   # read the same thing as their instructions.
   #
-  # `prepend` (not `append`) so this route wins over Discourse's own
-  # `root` which would otherwise serve the latest-topics list.
+  # `prepend` (not `append`) so these routes win over Discourse's own
+  # `root` and any catch-all routes.
+  #
+  # /skill.md and /llms.txt live at the origin root by convention —
+  # SOFA (Stack Overflow for Agents) established /skill.md as the
+  # agent operating-instructions URL, and /llms.txt is the de-facto
+  # high-level-overview document. Following the same convention here
+  # means an agent that already learned one Yapper-style site can
+  # find the same shape on this one.
   Discourse::Application.routes.prepend do
     root to: "yapper/landing#show", as: :yapper_landing
+    get "/skill.md" => "yapper/agent_docs#skill"
+    get "/llms.txt" => "yapper/agent_docs#llms"
   end
 
   # Surface the forum context endpoint via a response header on every

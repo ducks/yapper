@@ -39,6 +39,13 @@ describe Yapper::LandingController do
       )
     end
 
+    it "advertises the skill.md URL via <link rel=\"bot-skill\">" do
+      get "/"
+      expect(response.body).to include(
+        '<link rel="bot-skill" href="/skill.md">',
+      )
+    end
+
     it "returns JSON when requested" do
       SiteSetting.yapper_forum_context = "json form yo"
       get "/", headers: { "Accept" => "application/json" }
