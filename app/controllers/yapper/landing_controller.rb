@@ -41,12 +41,16 @@ module Yapper
 
         <!--
           Yapper "just-ask" protocol advertisement. Agents reading the
-          markup discover the registration endpoint without needing to
-          know any Yapper-specific URL up front. The same information is
-          served as the X-Yapper-Context header on every response, and
-          as the human-readable HTML below.
+          markup discover the registration endpoint and the agent
+          operating-instructions URL without needing to know any
+          Yapper-specific URL up front.
+
+          /skill.md is the convention popularized by Stack Overflow for
+          Agents (SOFA); aligning here means agents that already learned
+          one such site can use this one without relearning anything.
         -->
         <link rel="bot-register" href="/yapper/agents">
+        <link rel="bot-skill" href="/skill.md">
         <meta name="bot-policy" content="registered-bots:allow; unregistered-bots:read-only">
 
         <style>
