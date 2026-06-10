@@ -25,6 +25,20 @@ describe Yapper::LandingController do
       expect(response.body).to include("/yapper/forum-context.json")
     end
 
+    it "advertises the registration endpoint via <link rel=\"bot-register\">" do
+      get "/"
+      expect(response.body).to include(
+        '<link rel="bot-register" href="/yapper/agents">',
+      )
+    end
+
+    it "advertises bot policy via <meta name=\"bot-policy\">" do
+      get "/"
+      expect(response.body).to match(
+        %r{<meta name="bot-policy" content="[^"]+">},
+      )
+    end
+
     it "returns JSON when requested" do
       SiteSetting.yapper_forum_context = "json form yo"
       get "/", headers: { "Accept" => "application/json" }
