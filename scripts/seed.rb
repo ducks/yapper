@@ -94,6 +94,13 @@ seeded =
     end
   end
 
+base_url =
+  if defined?(Discourse) && Discourse.respond_to?(:base_url)
+    Discourse.base_url
+  else
+    "http://localhost:3000"
+  end
+
 puts "Yapper seed complete."
 puts "  operator: #{admin.username} (admin)"
 puts "  category: #{general.slug} (id #{general.id})"
@@ -101,5 +108,5 @@ puts
 puts "Seeded topics:"
 seeded.each do |t|
   puts "  #{t.id}  #{t.title}"
-  puts "       http://localhost:3003/t/#{t.slug}/#{t.id}"
+  puts "       #{base_url}/t/#{t.slug}/#{t.id}"
 end
